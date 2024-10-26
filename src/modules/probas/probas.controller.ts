@@ -7,10 +7,12 @@ import { Roles } from "../common/decorators/roles.decorator"
 import { User } from "../common/decorators/user.decorator"
 import { JwtPayloadDto } from "../auth/dto/jwtpayload.dto"
 import { UpdateEntireProbasDto } from "./dto/update.entire.probas.dto"
+import { ApiTags } from "@nestjs/swagger"
 
+@ApiTags("Probas")
 @Controller("probas")
 export class ProbasController {
-  constructor(private readonly probasService: ProbasService) {}
+  constructor(private readonly probasService: ProbasService) { }
 
   private readonly logger = new Logger(ProbasController.name)
 

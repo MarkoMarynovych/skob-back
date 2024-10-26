@@ -8,7 +8,9 @@ import * as process from "node:process"
 import { EmailDto } from "../common/dto/email.dto"
 import { User } from "../common/decorators/user.decorator"
 import { JwtPayloadDto } from "../auth/dto/jwtpayload.dto"
+import { ApiTags } from "@nestjs/swagger"
 
+@ApiTags("Invites")
 @Controller("invites")
 export class InvitesController {
   constructor(private readonly invitesService: InvitesService) {

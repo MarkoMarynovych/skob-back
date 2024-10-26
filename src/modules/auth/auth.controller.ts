@@ -4,8 +4,10 @@ import { Public } from "../common/decorators/public.decorator"
 import { Response } from "express"
 import { AuthGuard } from "@nestjs/passport"
 import * as process from "node:process"
+import { ApiTags } from "@nestjs/swagger"
 
 @Public()
+@ApiTags("Auth")
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {
@@ -20,7 +22,7 @@ export class AuthController {
 
   @Get("google")
   @UseGuards(AuthGuard("google"))
-  async googleAuth(@Req() req: any) {}
+  async googleAuth(@Req() req: any) { }
 
   @Get("google/callback")
   @UseGuards(AuthGuard("google"))

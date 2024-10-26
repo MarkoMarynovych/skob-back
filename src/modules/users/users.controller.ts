@@ -7,10 +7,12 @@ import { Roles } from "../common/decorators/roles.decorator"
 import { Role } from "../common/enums/role.enum"
 import { UserDto } from "./dto/user.dto"
 import { UpdateUserDto } from "./dto/update.user.dto"
+import { ApiTags } from "@nestjs/swagger"
 
+@ApiTags("Users")
 @Controller("users")
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(private userService: UsersService) { }
 
   private readonly logger = new Logger(UsersController.name)
 
