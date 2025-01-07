@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common"
-import { APP_GUARD } from "@nestjs/core"
 import { JwtModule } from "@nestjs/jwt"
 import { PassportModule } from "@nestjs/passport"
 import { TypeOrmModule } from "@nestjs/typeorm"
@@ -9,7 +8,6 @@ import { DatabaseModule } from "~shared/infrastructure/database/database.module"
 import { UserSchema } from "~shared/infrastructure/database/postgres/schemas/user.schema"
 import { UsersModule } from "../users/users.module"
 import { AuthenticateUserUseCase } from "./application/use-cases/google-authenticate.use-case"
-import { AuthGuard } from "./auth.guard"
 import { AuthDiToken } from "./constants"
 import { CreateUserMapper } from "./domain/mappers/create-user.mapper"
 import { AuthController } from "./infrastructure/controllers/google-oauth2/google-oauth2.controller"
@@ -33,10 +31,6 @@ import { GoogleStrategy } from "./strategy/google.strategy"
     CreateUserMapper,
     { provide: AuthDiToken.AUTHENTICATE_USER_USE_CASE, useClass: AuthenticateUserUseCase },
     { provide: UserDiToken.USER_REPOSITORY, useClass: UserRepository },
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
   ],
   exports: [],
 })

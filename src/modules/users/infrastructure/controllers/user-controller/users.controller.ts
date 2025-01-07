@@ -22,6 +22,7 @@ export class UsersController {
   //   const user = await this.userService.updateUser(updatePayload, params.email, requestEmail)
   //   return UpdateUserDto.toDto(user)
   // }
+
   // @Roles(Role.FOREMAN)
   // @UsePipes(new ValidationPipe())
   // @Get(":email")
@@ -36,6 +37,7 @@ export class UsersController {
   //   }
   //   return UserDto.toDto(user)
   // }
+
   // @Get("scouts/all")
   // @Roles(Role.FOREMAN)
   // async getAllScoutsByForemanEmail(@User() { email }: JwtPayloadDto) {
@@ -46,6 +48,7 @@ export class UsersController {
   //   }
   //   return UserDto.toDtoList(scouts)
   // }
+
   // @UsePipes(new ValidationPipe())
   // @Roles(Role.FOREMAN)
   // @Delete(":email")
