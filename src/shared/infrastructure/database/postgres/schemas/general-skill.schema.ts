@@ -1,24 +1,18 @@
-// import { EntitySchema } from "typeorm"
-// import { BaseColumnSchemaPart } from "./base.schema"
+import { Column, Entity, OneToMany } from "typeorm"
+import { AbstractEntity } from "~shared/domain/entities/entity"
+import { SkillSchema } from "./skill.schema"
 
-// export interface IGeneralSkill {
-//   id: string
-//   title: string
-//   skill_id: string
-// }
+export interface IGeneralSkill {
+  id: string
+  title: string
+  skills?: SkillSchema[]
+}
 
-// export const GeneralSkillSchema = new EntitySchema<IGeneralSkill>({
-//   name: "general_skill",
-//   columns: {
-//     ...BaseColumnSchemaPart,
-//     title: {
-//       type: String,
-//     },
-//   },
-//   relations: {
-//     skill_id: {
-//       type: "many-to-one",
-//       target: "skill",
-//     },
-//   },
-// })
+@Entity("general_skill")
+export class GeneralSkillSchema extends AbstractEntity<IGeneralSkill> {
+  @Column()
+  title: string
+
+  @OneToMany(() => SkillSchema, (skill) => skill.general_skill)
+  skills: SkillSchema[]
+}

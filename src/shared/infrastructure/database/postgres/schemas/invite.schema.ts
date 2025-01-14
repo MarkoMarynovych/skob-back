@@ -1,34 +1,30 @@
-// import { EntitySchema } from "typeorm"
-// import { BaseColumnSchemaPart } from "./base.schema"
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
+import { AbstractEntity } from "~shared/domain/entities/entity"
+import { UserSchema } from "./user.schema"
 
-// export interface IInvite {
-//   id: string
-//   foreman_id: string
-//   scout_id: string
-//   status: boolean
-//   created_at: Date
-//   expired_at: Date
-// }
+export interface IInvite {
+  id: string
+  foreman_id: UserSchema
+  scout_id: UserSchema
+  status: boolean
+}
 
-// export const InviteSchema = new EntitySchema<IInvite>({
-//   name: "invites",
-//   columns: {
-//     ...BaseColumnSchemaPart,
-//     status: {
-//       type: Boolean,
-//     },
-//     expired_at: {
-//       type: Date,
-//     },
-//   },
-//   relations: {
-//     foreman_id: {
-//       type: "many-to-one",
-//       target: "users",
-//     },
-//     scout_id: {
-//       type: "many-to-one",
-//       target: "users",
-//     },
-//   },
-// })
+@Entity("invites")
+export class InviteSchema extends AbstractEntity<IInvite> {
+  @Column()
+  hash: string
+
+  @Column()
+  status: boolean
+
+  @Column()
+  expired_at: Date
+
+  @ManyToOne(() => UserSchema, (user) => user.id)
+  @JoinColumn({ name: "foreman_id" })
+  foreman: UserSchema
+
+  @ManyToOne(() => UserSchema, (user) => user.id)
+  @JoinColumn({ name: "scout_id" })
+  scout: UserSchema
+}

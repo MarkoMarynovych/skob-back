@@ -6,19 +6,19 @@ import { IUserRepository } from "~modules/users/domain/repositories/user.reposit
 import { UserDiToken } from "~modules/users/infrastructure/constants/user-constants"
 import { IUseCase } from "~shared/application/use-cases/use-case.interface"
 
-export interface IArrangeSubscriptionPayload {
+export interface IArrangeGoogleAuthenticationPayload {
   user: UserDto
 }
 
 @Injectable()
-export class AuthenticateUserUseCase implements IUseCase<IArrangeSubscriptionPayload, UserDto> {
+export class AuthenticateUserUseCase implements IUseCase<IArrangeGoogleAuthenticationPayload, UserDto> {
   constructor(
     @Inject(UserDiToken.USER_REPOSITORY) private readonly userRepository: IUserRepository,
     private readonly jwtService: JwtService,
     private readonly createUserMapper: CreateUserMapper
   ) {}
 
-  public async execute(input: IArrangeSubscriptionPayload): Promise<UserDto> {
+  public async execute(input: IArrangeGoogleAuthenticationPayload): Promise<UserDto> {
     try {
       if (!input.user) {
         throw new UnauthorizedException("The account with this email address was not registered through Google")
@@ -31,7 +31,11 @@ export class AuthenticateUserUseCase implements IUseCase<IArrangeSubscriptionPay
       if (!userDb) {
         const createUser = await this.userRepository
           .save({
-            ...input.user,
+            id: input.user.id,
+            name: input.user.name,
+            email: input.user.email,
+            sex: input.user.sex,
+            picture: input.user.picture,
             is_guide_complete: false,
           })
           .catch((error) => {

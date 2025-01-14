@@ -1,14 +1,38 @@
-import { ForbiddenException, Injectable } from "@nestjs/common"
+import { ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common"
 import { User } from "~modules/users/domain/entities/user.entity"
-import { UserRepository } from "~modules/users/infrastructure/repositories/user.repository"
-@Injectable()
-export class UpdateUserUseCase {
-  constructor(private readonly userRepository: UserRepository) {}
+import { IUserRepository } from "~modules/users/domain/repositories/user.repository.interface"
+import { IUseCase } from "~shared/application/use-cases/use-case.interface"
+import { UserDto } from "../../dto/user.dto"
 
-  async execute(updateData: Partial<User>, targetEmail: string, requestEmail: string): Promise<User> {
-    if (targetEmail !== requestEmail) {
-      throw new ForbiddenException("Cannot update other user's data")
+export interface IUpdateUserPayload {
+  updateData: Partial<User>
+  targetEmail: string
+  requestEmail: string
+}
+
+@Injectable()
+export class UpdateUserUseCase implements IUseCase<IUpdateUserPayload, UserDto> {
+  constructor(
+    @Inject("USER_REPOSITORY")
+    private readonly userRepository: IUserRepository
+  ) {}
+
+  async execute(input: IUpdateUserPayload): Promise<UserDto> {
+    try {
+      await this.userRepository.validateUserUpdatePermission(input.targetEmail, input.requestEmail)
+
+      const updatedUser = await this.userRepository.update(input.targetEmail, input.updateData)
+
+      if (!updatedUser) {
+        throw new NotFoundException(`User with email ${input.targetEmail} not found`)
+      }
+
+      return updatedUser
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error
+      }
+      throw new Error(`Failed to update user: ${error.message}`)
     }
-    return await this.userRepository.update(targetEmail, updateData)
   }
 }

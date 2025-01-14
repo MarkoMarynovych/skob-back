@@ -1,31 +1,19 @@
-// import { EntitySchema } from "typeorm"
-// import { BaseColumnSchemaPart } from "./base.schema"
+import { Entity, JoinColumn, ManyToOne } from "typeorm"
+import { AbstractEntity } from "~shared/domain/entities/entity"
+import { UserSchema } from "./user.schema"
 
-// export interface IScoutsForemans {
-//   id: string
-//   foreman_id: string
-//   user_id: string
-// }
+interface IScoutsForemans {
+  foreman: UserSchema
+  scout: UserSchema
+}
 
-// export const ScoutsForemansSchema = new EntitySchema<IScoutsForemans>({
-//   name: "scouts_foremans",
-//   columns: {
-//     ...BaseColumnSchemaPart,
-//   },
-//   relations: {
-//     foreman_id: {
-//       type: "many-to-one",
-//       target: "users",
-//       joinColumn: {
-//         name: "foreman_id",
-//       },
-//     },
-//     user_id: {
-//       type: "one-to-one",
-//       target: "users",
-//       joinColumn: {
-//         name: "user_id",
-//       },
-//     },
-//   },
-// })
+@Entity("scouts_foremans")
+export class ScoutsForemansSchema extends AbstractEntity<IScoutsForemans> {
+  @ManyToOne(() => UserSchema, (user) => user.scouts)
+  @JoinColumn({ name: "user_id" })
+  scout: UserSchema
+
+  @ManyToOne(() => UserSchema, (user) => user.foremans)
+  @JoinColumn({ name: "foreman_id" })
+  foreman: UserSchema
+}

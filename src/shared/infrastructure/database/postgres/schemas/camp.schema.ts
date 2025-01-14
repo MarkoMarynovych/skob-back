@@ -1,25 +1,26 @@
-// import { EntitySchema } from "typeorm"
-// import { BaseColumnSchemaPart } from "./base.schema"
+import { Column, Entity, OneToMany } from "typeorm"
+import { AbstractEntity } from "~shared/domain/entities/entity"
+import { UserCampsSchema } from "./user-camps.schema"
 
-// export interface ICamp {
-//   id: string
-//   name: string
-//   start_date: Date
-//   end_date: Date
-// }
+export interface ICamp {
+  id: string
+  name: string
+  start_date: Date
+  end_date: Date
+  userCamps?: UserCampsSchema[]
+}
 
-// export const CampSchema = new EntitySchema<ICamp>({
-//   name: "camps",
-//   columns: {
-//     ...BaseColumnSchemaPart,
-//     name: {
-//       type: String,
-//     },
-//     start_date: {
-//       type: "timestamptz",
-//     },
-//     end_date: {
-//       type: "timestamptz",
-//     },
-//   },
-// })
+@Entity("camps")
+export class CampSchema extends AbstractEntity<ICamp> {
+  @Column()
+  name: string
+
+  @Column()
+  start_date: Date
+
+  @Column()
+  end_date: Date
+
+  @OneToMany(() => UserCampsSchema, (userCamp) => userCamp.camp)
+  userCamps: UserCampsSchema[]
+}

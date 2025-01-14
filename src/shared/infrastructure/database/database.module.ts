@@ -1,8 +1,9 @@
+import { RedisModule } from "@nestjs-modules/ioredis"
 import { Module } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { DataSource } from "typeorm"
 import { POSTGRES_SCHEMAS } from "./postgres/postgres.schemas"
+
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -18,10 +19,14 @@ import { POSTGRES_SCHEMAS } from "./postgres/postgres.schemas"
       }),
       inject: [ConfigService],
     }),
+    RedisModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        type: "single",
+        url: `redis://${configService.getOrThrow("REDIS_HOST")}:${configService.getOrThrow("REDIS_PORT")}`,
+      }),
+      inject: [ConfigService],
+    }),
   ],
-  providers: [],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, RedisModule],
 })
-export class DatabaseModule {
-  constructor(private dataSource: DataSource) {}
-}
+export class DatabaseModule {}

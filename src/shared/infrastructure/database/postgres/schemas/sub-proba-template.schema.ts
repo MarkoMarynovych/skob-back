@@ -1,30 +1,33 @@
-// import { EntitySchema } from "typeorm"
-// import { BaseColumnSchemaPart } from "./base.schema"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm"
+import { AbstractEntity } from "~shared/domain/entities/entity"
+import { ProbaTemplateSchema } from "./proba-template.schema"
+import { UserSubProbasSchema } from "./user-sub-probas.schema"
 
-// export interface ISubProbaTemplate {
-//   id: string
-//   parent_proba_template_id: string
-//   sub_proba_template_id: string
-//   title: string
-// }
+export interface ISubProbaTemplate {
+  id: string
+  parent_proba_template_id: string
+  sub_parent_template_id: string
+  title: string
+  userSubProbas?: UserSubProbasSchema[]
+  subTemplates?: SubProbaTemplateSchema[]
+}
 
-// export const SubProbaTemplateSchema = new EntitySchema<ISubProbaTemplate>({
-//   name: "sub_proba_template",
-//   columns: {
-//     ...BaseColumnSchemaPart,
-//     title: {
-//       type: String,
-//     },
-//   },
-//   relations: {
-//     parent_proba_template_id: {
-//       type: "many-to-one",
-//       target: "proba_template",
-//     },
-//     sub_proba_template_id: {
-//       type: "many-to-one",
-//       target: "sub_proba_template",
-//       nullable: true,
-//     },
-//   },
-// })
+@Entity("sub_proba_template")
+export class SubProbaTemplateSchema extends AbstractEntity<ISubProbaTemplate> {
+  @Column()
+  title: string
+
+  @ManyToOne(() => ProbaTemplateSchema, (probaTemplate) => probaTemplate.subProbas)
+  @JoinColumn({ name: "parent_proba_template_id" })
+  parent_proba_template: ProbaTemplateSchema
+
+  @ManyToOne(() => SubProbaTemplateSchema, (subProba) => subProba.subTemplates)
+  @JoinColumn({ name: "sub_parent_template_id" })
+  sub_parent_template: SubProbaTemplateSchema
+
+  @OneToMany(() => SubProbaTemplateSchema, (subProba) => subProba.sub_parent_template)
+  subTemplates: SubProbaTemplateSchema[]
+
+  @OneToMany(() => UserSubProbasSchema, (userSubProba) => userSubProba.sub_proba_template)
+  userSubProbas: UserSubProbasSchema[]
+}

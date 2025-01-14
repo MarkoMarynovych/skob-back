@@ -5,23 +5,22 @@ import { UserDiToken } from "~modules/users/infrastructure/constants/user-consta
 import { IUseCase } from "~shared/application/use-cases/use-case.interface"
 import { UserDto } from "../../dto/user.dto"
 
-export interface IArrangeSubscriptionPayload {
+interface IGetUserPayload {
   userEmail: string
 }
 
 @Injectable()
-export class GetUserUseCase implements IUseCase<IArrangeSubscriptionPayload, UserDto> {
+export class GetUserUseCase implements IUseCase<IGetUserPayload, UserDto> {
   constructor(
     @Inject(UserDiToken.USER_REPOSITORY) private readonly userRepository: IUserRepository,
     private readonly userMapper: UserMapper
   ) {}
 
-  public async execute(input: IArrangeSubscriptionPayload): Promise<UserDto> {
+  public async execute(input: IGetUserPayload): Promise<UserDto> {
     const user = await this.userRepository.findByEmail(input.userEmail)
     if (!user) {
       throw new NotFoundException(`User not found with email ${input.userEmail}`)
     }
-    console.log("user", user === null)
     return this.userMapper.toDto(user)
   }
 }

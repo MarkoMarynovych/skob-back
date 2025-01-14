@@ -1,5 +1,5 @@
 import { Expose } from "class-transformer"
-import { IsBoolean, IsEnum, IsOptional, IsString } from "class-validator"
+import { IsBoolean, IsEnum, IsOptional, IsString, IsUrl } from "class-validator"
 import { Sex } from "../enums/sex.enum"
 
 export class UpdateUserDto {
@@ -17,4 +17,9 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   is_guide_complete: boolean
+
+  @Expose()
+  @IsOptional()
+  @IsUrl()
+  picture?: string
 }
