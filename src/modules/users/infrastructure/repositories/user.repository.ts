@@ -1,16 +1,20 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common"
+import { ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { DataSource, Repository } from "typeorm"
+import { IProbaRepository, ProbaDITokens } from "~modules/proba/domain/repositories/proba.repository.interface"
 import { User } from "~modules/users/domain/entities/user.entity"
 import { IUserRepository } from "~modules/users/domain/repositories/user.repository.interface"
 import { ScoutsForemansSchema } from "~shared/infrastructure/database/postgres/schemas/scouts-foremans.schema"
 import { UserSchema } from "~shared/infrastructure/database/postgres/schemas/user.schema"
+
 @Injectable()
 export class UserRepository implements IUserRepository {
   constructor(
     @InjectRepository(UserSchema)
     private readonly usersRepository: Repository<UserSchema>,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
+    @Inject(ProbaDITokens.PROBA_REPOSITORY)
+    private readonly probaRepository: IProbaRepository
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -50,8 +54,22 @@ export class UserRepository implements IUserRepository {
   }
 
   async save(user: Partial<User>): Promise<User> {
-    const savedUser = await this.usersRepository.save(user)
-    return savedUser
+    const queryRunner = this.dataSource.createQueryRunner()
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
+
+    try {
+      const savedUser = await queryRunner.manager.save(UserSchema, user)
+      await this.probaRepository.initializeUserProbas(savedUser.id)
+
+      await queryRunner.commitTransaction()
+      return savedUser
+    } catch (error) {
+      await queryRunner.rollbackTransaction()
+      throw error
+    } finally {
+      await queryRunner.release()
+    }
   }
 
   async update(email: string, userData: Partial<User>): Promise<User> {

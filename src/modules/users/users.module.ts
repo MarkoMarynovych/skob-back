@@ -1,4 +1,6 @@
 import { Module } from "@nestjs/common"
+import { ProbaDITokens } from "~modules/proba/domain/repositories/proba.repository.interface"
+import { ProbaRepository } from "~modules/proba/infrastructure/repositories/proba.repository"
 import { GetScoutByForemanEmailUseCase } from "./application/use-cases/get-scout-by-foreman-email/get-scout-by-foreman-email.use-case"
 import { GetUserUseCase } from "./application/use-cases/get-user/get-user.use-case"
 import { RemoveScoutFromGroupUseCase } from "./application/use-cases/remove-scout-from-group/remove-scout-from-group.use-case"
@@ -17,6 +19,10 @@ import { UserRepository } from "./infrastructure/repositories/user.repository"
     { provide: UserDiToken.USER_REPOSITORY, useClass: UserRepository },
     { provide: UserDiToken.GET_SCOUT_BY_FOREMAN_EMAIL_USE_CASE, useClass: GetScoutByForemanEmailUseCase },
     { provide: UserDiToken.REMOVE_SCOUT_FROM_GROUP_USE_CASE, useClass: RemoveScoutFromGroupUseCase },
+    {
+      provide: ProbaDITokens.PROBA_REPOSITORY,
+      useClass: ProbaRepository,
+    },
   ],
   exports: [],
 })

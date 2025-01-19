@@ -31,7 +31,7 @@ export class GlobalExceptionsFilter extends BaseExceptionFilter implements Excep
     if (host.getType() === "http") {
       const response: Response = host.switchToHttp().getResponse()
       if (exception instanceof AppException) {
-        const status = exception["httpStatus"] ?? EXCEPTION_TYPE_STATUSES[exception.type] ?? HttpStatus.INTERNAL_SERVER_ERROR // exception['httpStatus'] in case of CustomException
+        const status = exception["httpStatus"] ?? EXCEPTION_TYPE_STATUSES[exception.type] ?? HttpStatus.INTERNAL_SERVER_ERROR
         response.status(status).send({
           message: exception.message,
           status,

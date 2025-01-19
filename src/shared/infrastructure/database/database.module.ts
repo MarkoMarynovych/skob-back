@@ -2,12 +2,14 @@ import { RedisModule } from "@nestjs-modules/ioredis"
 import { Module } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
+import { DataSource, DataSourceOptions } from "typeorm"
 import { POSTGRES_SCHEMAS } from "./postgres/postgres.schemas"
+import { seedProbas } from "./postgres/seeds/proba.seed"
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      useFactory: (configService: ConfigService) => ({
+      useFactory: async (configService: ConfigService) => ({
         type: "postgres",
         host: configService.getOrThrow("POSTGRES_DB_HOST"),
         port: Number(configService.getOrThrow("POSTGRES_DB_PORT") ?? 5432),
@@ -18,6 +20,11 @@ import { POSTGRES_SCHEMAS } from "./postgres/postgres.schemas"
         entities: POSTGRES_SCHEMAS,
       }),
       inject: [ConfigService],
+      dataSourceFactory: async (options) => {
+        const dataSource = await new DataSource(options as DataSourceOptions).initialize()
+        await seedProbas(dataSource)
+        return dataSource
+      },
     }),
     RedisModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({

@@ -1,5 +1,7 @@
 import { BullModule } from "@nestjs/bull"
 import { Module } from "@nestjs/common"
+import { ProbaDITokens } from "~modules/proba/domain/repositories/proba.repository.interface"
+import { ProbaRepository } from "~modules/proba/infrastructure/repositories/proba.repository"
 import { UserDiToken } from "~modules/users/infrastructure/constants/user-constants"
 import { UserRepository } from "~modules/users/infrastructure/repositories/user.repository"
 import { SharedInfrastructureDiToken } from "~shared/infrastructure/constants/shared-infrastructure-constants"
@@ -14,6 +16,8 @@ import { InvitesController } from "./infrastructure/controllers/invite-controlle
 import { InvitationQueueProcessor } from "./infrastructure/processors/invitation-queue.processor"
 import { InvitesRepository } from "./infrastructure/repositories/invites.repository"
 import { SendInvitationService } from "./infrastructure/services/send-invitation.service"
+import { AuthDiToken } from "~modules/auth/constants"
+import { CreateUserProbaUseCase } from "~modules/proba/application/use-cases/create-user-proba/create-user-proba.use-case"
 
 @Module({
   imports: [BullModule.registerQueue({ name: "invitations" })],
@@ -28,6 +32,9 @@ import { SendInvitationService } from "./infrastructure/services/send-invitation
     { provide: SharedInfrastructureDiToken.TEMPLATE_SERVICE, useClass: TemplateService },
     { provide: SharedInfrastructureDiToken.FILE_SERVICE, useClass: FileService },
     { provide: SharedInfrastructureDiToken.HASH_SERVICE, useClass: HashService },
+    { provide: ProbaDITokens.PROBA_REPOSITORY, useClass: ProbaRepository },
+    { provide: ProbaDITokens.PROBA_REPOSITORY, useClass: ProbaRepository },
+    { provide: AuthDiToken.CREATE_USER_PROBA_USE_CASE, useClass: CreateUserProbaUseCase },
     InvitationQueueProcessor,
   ],
 })

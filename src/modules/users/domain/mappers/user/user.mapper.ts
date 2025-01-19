@@ -13,8 +13,6 @@ export class UserMapper {
       sex: user.sex,
       is_guide_complete: user.is_guide_complete,
       picture: user.picture,
-      // foremans: user.foremans,
-      // scouts: user.scouts,
     } satisfies UserDto)
   }
 }

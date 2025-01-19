@@ -1,13 +1,9 @@
 import { Sex } from "src/modules/users/application/enums/sex.enum"
 import { Column, Entity, OneToMany } from "typeorm"
 import { AbstractEntity } from "~shared/domain/entities/entity"
-import { DatesSchema } from "./dates.schema"
 import { InviteSchema } from "./invite.schema"
 import { ScoutsForemansSchema } from "./scouts-foremans.schema"
-import { UserCampsSchema } from "./user-camps.schema"
-import { UserProbasSchema } from "./user-probas.schema"
-import { UserSkillsSchema } from "./user-skills.schema"
-import { UserSubProbasSchema } from "./user-sub-probas.schema"
+import { UserProbaProgressSchema } from "./user-proba-progress.schema"
 
 interface IUser {
   name: string
@@ -17,12 +13,7 @@ interface IUser {
   picture?: string
   foremans?: ScoutsForemansSchema[]
   scouts?: ScoutsForemansSchema[]
-  probas?: UserProbasSchema[]
-  subProbas?: UserSubProbasSchema[]
-  skills?: UserSkillsSchema[]
-  camps?: UserCampsSchema[]
-  scoutDates?: DatesSchema[]
-  foremanDates?: DatesSchema[]
+  proba_progress?: UserProbaProgressSchema[]
   receivedInvites?: InviteSchema[]
   sentInvites?: InviteSchema[]
 }
@@ -50,23 +41,8 @@ export class UserSchema extends AbstractEntity<IUser> {
   @OneToMany(() => ScoutsForemansSchema, (scoutForeman) => scoutForeman.scout)
   scouts: ScoutsForemansSchema[]
 
-  @OneToMany(() => UserProbasSchema, (userProba) => userProba.user)
-  probas: UserProbasSchema[]
-
-  @OneToMany(() => UserSubProbasSchema, (userSubProba) => userSubProba.user)
-  subProbas: UserSubProbasSchema[]
-
-  @OneToMany(() => UserSkillsSchema, (userSkill) => userSkill.user)
-  skills: UserSkillsSchema[]
-
-  @OneToMany(() => UserCampsSchema, (userCamp) => userCamp.user)
-  camps: UserCampsSchema[]
-
-  @OneToMany(() => DatesSchema, (date) => date.scout)
-  scoutDates: DatesSchema[]
-
-  @OneToMany(() => DatesSchema, (date) => date.foreman)
-  foremanDates: DatesSchema[]
+  @OneToMany(() => UserProbaProgressSchema, (progress) => progress.user)
+  proba_progress: UserProbaProgressSchema[]
 
   @OneToMany(() => InviteSchema, (invite) => invite.scout)
   receivedInvites: InviteSchema[]

@@ -1,23 +1,23 @@
-import { Column, Entity, OneToMany } from "typeorm"
-import { AbstractEntity } from "~shared/domain/entities/entity"
-import { SubProbaTemplateSchema } from "./sub-proba-template.schema"
-import { UserProbasSchema } from "./user-probas.schema"
-
-export interface IProbaTemplate {
-  id: string
-  title: string
-  userProbas?: UserProbasSchema[]
-  subProbas?: SubProbaTemplateSchema[]
-}
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
+import { ProbaItemSchema } from "./proba-item.schema"
 
 @Entity("proba_template")
-export class ProbaTemplateSchema extends AbstractEntity<IProbaTemplate> {
+export class ProbaTemplateSchema {
+  @PrimaryGeneratedColumn("uuid")
+  id: string
+
   @Column()
-  title: string
+  name: string
 
-  @OneToMany(() => UserProbasSchema, (userProba) => userProba.proba_template)
-  userProbas: UserProbasSchema[]
+  @Column()
+  section: string
 
-  @OneToMany(() => SubProbaTemplateSchema, (subProba) => subProba.parent_proba_template)
-  subProbas: SubProbaTemplateSchema[]
+  @Column()
+  section_name: string
+
+  @Column()
+  order: number
+
+  @OneToMany(() => ProbaItemSchema, (item) => item.template)
+  items: ProbaItemSchema[]
 }
