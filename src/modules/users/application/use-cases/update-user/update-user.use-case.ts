@@ -3,6 +3,7 @@ import { User } from "~modules/users/domain/entities/user.entity"
 import { IUserRepository } from "~modules/users/domain/repositories/user.repository.interface"
 import { IUseCase } from "~shared/application/use-cases/use-case.interface"
 import { UserDto } from "../../dto/user.dto"
+import { UserDiToken } from "~modules/users/infrastructure/constants/user-constants"
 
 export interface IUpdateUserPayload {
   updateData: Partial<User>
@@ -13,7 +14,7 @@ export interface IUpdateUserPayload {
 @Injectable()
 export class UpdateUserUseCase implements IUseCase<IUpdateUserPayload, UserDto> {
   constructor(
-    @Inject("USER_REPOSITORY")
+    @Inject(UserDiToken.USER_REPOSITORY)
     private readonly userRepository: IUserRepository
   ) {}
 
