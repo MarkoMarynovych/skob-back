@@ -9,7 +9,7 @@ export class Application {
   private readonly port: string | number
   protected app: NestExpressApplication
 
-  constructor(port: string | number = 1448) {
+  constructor(port: string | number = 3000) {
     this.port = port
   }
 
@@ -25,7 +25,7 @@ export class Application {
 
   private setupMiddleware() {
     this.app.enableCors({
-      origin: process.env.FRONTEND_BASE_URL,
+      origin: "http://localhost:5173",
       credentials: true,
     })
     this.app.use(cookieParser(process.env.COOKIE_SECRET))

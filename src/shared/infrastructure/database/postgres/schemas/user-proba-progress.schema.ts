@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm"
-import { ProbaItemSchema } from "./proba-item.schema"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm"
+import { ProbaItemTemplateSchema } from "./proba-item-template.schema"
 import { UserSchema } from "./user.schema"
+import { ProbaNoteSchema } from "./proba-note.schema"
 
 @Entity("user_proba_progress")
 export class UserProbaProgressSchema {
@@ -11,9 +12,9 @@ export class UserProbaProgressSchema {
   @JoinColumn({ name: "user_id" })
   user: UserSchema
 
-  @ManyToOne(() => ProbaItemSchema, { onDelete: "CASCADE" })
+  @ManyToOne(() => ProbaItemTemplateSchema, { onDelete: "CASCADE", eager: true })
   @JoinColumn({ name: "proba_item_id" })
-  proba_item: ProbaItemSchema
+  proba_item: ProbaItemTemplateSchema
 
   @Column({ default: false })
   is_completed: boolean
@@ -21,7 +22,10 @@ export class UserProbaProgressSchema {
   @Column({ type: "timestamp", nullable: true })
   completed_at: Date
 
-  @ManyToOne(() => UserSchema, { nullable: true, onDelete: "SET NULL" })
+  @ManyToOne(() => UserSchema, { nullable: true, onDelete: "SET NULL", eager: true })
   @JoinColumn({ name: "signed_by_id" })
   signed_by: UserSchema
+
+  @OneToMany(() => ProbaNoteSchema, (note) => note.progress)
+  notes: ProbaNoteSchema[]
 }

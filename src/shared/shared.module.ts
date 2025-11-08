@@ -1,3 +1,4 @@
+import { BullModule } from "@nestjs/bull"
 import { Global, Module } from "@nestjs/common"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
@@ -11,7 +12,21 @@ import { HashService } from "./infrastructure/services/generate-hash/hash.servic
 
 @Global()
 @Module({
-  imports: [DatabaseModule, ConfigModule.forRoot({ isGlobal: true }), TypeOrmModule.forFeature(POSTGRES_SCHEMAS)],
+  imports: [
+    DatabaseModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forFeature(POSTGRES_SCHEMAS),
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        redis: {
+          host: configService.get("REDIS_HOST") || "localhost",
+          port: configService.get("REDIS_PORT") || 6379,
+          password: configService.get("REDIS_PASSWORD") || undefined,
+        },
+      }),
+    }),
+  ],
   providers: [
     {
       provide: BaseToken.APP_CONFIG,
@@ -30,6 +45,6 @@ import { HashService } from "./infrastructure/services/generate-hash/hash.servic
       useClass: HashService,
     },
   ],
-  exports: [DatabaseModule, BaseToken.APP_CONFIG, TypeOrmModule],
+  exports: [DatabaseModule, BaseToken.APP_CONFIG, TypeOrmModule, BullModule],
 })
 export class SharedModule {}

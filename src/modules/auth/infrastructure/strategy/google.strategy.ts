@@ -33,12 +33,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
           name: `${name.givenName} ${name.familyName}`,
           is_guide_complete: false,
         })
-        console.log("Created new user:", user.id)
       }
 
       done(null, user)
     } catch (error) {
-      console.error("Error in validate:", error)
       done(error as Error, undefined)
     }
   }

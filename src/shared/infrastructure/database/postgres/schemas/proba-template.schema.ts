@@ -1,23 +1,28 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
-import { ProbaItemSchema } from "./proba-item.schema"
+import { Column, Entity, OneToMany } from "typeorm"
+import { AbstractEntity } from "~shared/domain/entities/entity"
+import { ProbaSectionTemplateSchema } from "./proba-section-template.schema"
 
-@Entity("proba_template")
-export class ProbaTemplateSchema {
-  @PrimaryGeneratedColumn("uuid")
-  id: string
-
-  @Column()
-  name: string
+@Entity("proba_templates")
+export class ProbaTemplateSchema extends AbstractEntity<{}> {
+  @Column({ length: 255 })
+  name: string // e.g., "Перша проба"
 
   @Column()
-  section: string
+  level: number // e.g., 0, 1, 2
 
-  @Column()
-  section_name: string
+  @Column({
+    type: "enum",
+    enum: ["MALE", "FEMALE", "NEUTRAL"],
+    default: "NEUTRAL",
+  })
+  gender_variant: string
 
-  @Column()
-  order: number
+  @Column({ default: 1 })
+  version: number
 
-  @OneToMany(() => ProbaItemSchema, (item) => item.template)
-  items: ProbaItemSchema[]
+  @Column({ default: true })
+  is_active: boolean
+
+  @OneToMany(() => ProbaSectionTemplateSchema, (section) => section.template)
+  sections: ProbaSectionTemplateSchema[]
 }

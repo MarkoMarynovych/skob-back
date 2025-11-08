@@ -12,10 +12,9 @@ export class InvitesRepository implements IInvitesRepository {
   ) {}
   async findOne(hash: string): Promise<InviteSchema | null> {
     const invite = await this.invitesRepository.findOne({
-      where: { hash: hash },
+      where: { token: hash },
       relations: {
-        scout: true,
-        foreman: true,
+        createdBy: true,
       },
     })
     return invite

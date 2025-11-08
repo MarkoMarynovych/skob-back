@@ -23,8 +23,6 @@ export class SignEntireProbaUseCase {
       throw new NotFoundException("User proba progress not found")
     }
 
-    console.log("User progress:", dto)
-
     const probaItems = Object.values(userProgress[probaKey]).flat()
 
     for (const progress of probaItems) {

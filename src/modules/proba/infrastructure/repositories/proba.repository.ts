@@ -1,68 +1,100 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
 import { ProbaProgressMapper } from "~modules/proba/domain/mappers/proba-progress.mapper"
-import { ProbaItemSchema } from "~shared/infrastructure/database/postgres/schemas/proba-item.schema"
+import { ProbaItemTemplateSchema } from "~shared/infrastructure/database/postgres/schemas/proba-item-template.schema"
 import { UserProbaProgressSchema } from "~shared/infrastructure/database/postgres/schemas/user-proba-progress.schema"
 import { IProbaRepository } from "../../domain/repositories/proba.repository.interface"
 import { OrganizedProbaProgress, OrganizedProbaProgressView } from "../../domain/types/organized-proba-progress.type"
 
 @Injectable()
 export class ProbaRepository implements IProbaRepository {
+  private readonly logger = new Logger(ProbaRepository.name)
+
   constructor(
-    @InjectRepository(ProbaItemSchema)
-    private itemRepo: Repository<ProbaItemSchema>,
+    @InjectRepository(ProbaItemTemplateSchema)
+    private itemRepo: Repository<ProbaItemTemplateSchema>,
     @InjectRepository(UserProbaProgressSchema)
     private progressRepo: Repository<UserProbaProgressSchema>
   ) {}
 
-  async initializeUserProbas(userId: string): Promise<void> {
-    const allItems = await this.itemRepo.find({
+  async initializeUserProbas(userId: string, gender: 'MALE' | 'FEMALE'): Promise<void> {
+    this.logger.log(`[ProbaRepository] initializeUserProbas called with userId: ${userId}, gender: ${gender}`)
+
+    // Step 1: Find all template items that apply to this user's gender
+    // This includes gender-specific templates and neutral ones.
+    this.logger.log(`[ProbaRepository] Querying for items with gender: ${gender} or NEUTRAL`)
+    const applicableItems = await this.itemRepo.find({
       relations: {
-        template: true,
-      },
-      order: {
-        template: {
-          order: "ASC",
+        section: {
+          template: true,
         },
-        order: "ASC",
       },
+      where: [
+        { section: { template: { gender_variant: gender } } },
+        { section: { template: { gender_variant: 'NEUTRAL' } } },
+      ],
     })
 
-    console.log("Found items to initialize:", allItems.length)
+    this.logger.log(`[ProbaRepository] Found ${applicableItems.length} applicable items`)
 
-    const progressEntries = allItems.map((probaItem) => ({
-      user: { id: userId },
-      proba_item: { id: probaItem.id },
-      is_completed: false,
-    }))
+    if (applicableItems.length === 0) {
+      // This is a critical error if templates are not seeded.
+      // We can log this, but we won't throw to not break the user flow.
+      this.logger.warn(`No proba items found for gender ${gender}. Database may need seeding.`)
+      return
+    }
 
-    console.log("Created progress entries:", progressEntries.length)
-    const saved = await this.progressRepo.save(progressEntries)
-    console.log("Saved progress entries:", saved.length)
+    // Step 2: Create a progress record for EACH item found.
+    this.logger.log(`[ProbaRepository] Creating progress entries for ${applicableItems.length} items`)
+    const progressEntries = applicableItems.map((item) => {
+      return this.progressRepo.create({
+        user: { id: userId },
+        proba_item: { id: item.id },
+        is_completed: false,
+      })
+    })
+
+    // Step 3: Save all new progress records in a single transaction.
+    // Using save on an array of entities is transactional by default.
+    this.logger.log(`[ProbaRepository] Saving ${progressEntries.length} progress entries`)
+    await this.progressRepo.save(progressEntries)
+    this.logger.log(`Initialized ${progressEntries.length} proba items for user ${userId}.`)
   }
 
   async getUserProbaProgress(userId: string): Promise<OrganizedProbaProgress> {
+    this.logger.log(`[ProbaRepository] getUserProbaProgress called for userId: ${userId}`)
+
     const progress = await this.progressRepo.find({
       where: {
         user: { id: userId },
       },
       relations: {
-        proba_item: {
-          template: true,
-        },
         user: true,
+        signed_by: true,
+        proba_item: {
+          section: {
+            template: true,
+          },
+        },
+        notes: {
+          createdBy: true,
+        },
       },
       order: {
         proba_item: {
-          template: {
+          section: {
+            template: {
+              level: "ASC",
+            },
             order: "ASC",
-            name: "ASC",
           },
           order: "ASC",
         },
       },
     })
+
+    this.logger.log(`[ProbaRepository] Found ${progress.length} progress items for user ${userId} before mapping`)
 
     if (!progress.length) {
       return {
@@ -87,7 +119,6 @@ export class ProbaRepository implements IProbaRepository {
     const item = await this.itemRepo.findOne({
       where: { id: itemId },
     })
-    console.log("Found proba item:", item)
 
     const progress = await this.progressRepo.findOne({
       where: {
@@ -101,12 +132,6 @@ export class ProbaRepository implements IProbaRepository {
     })
 
     if (!progress) {
-      const allProgress = await this.progressRepo.find({
-        where: { user: { id: userId } },
-        take: 1,
-      })
-      console.log("User has any progress:", allProgress.length > 0)
-
       throw new NotFoundException("User proba progress not found")
     }
 

@@ -1,9 +1,10 @@
 import { Sex } from "src/modules/users/application/enums/sex.enum"
-import { Column, Entity, OneToMany } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm"
 import { AbstractEntity } from "~shared/domain/entities/entity"
-import { InviteSchema } from "./invite.schema"
-import { ScoutsForemansSchema } from "./scouts-foremans.schema"
 import { UserProbaProgressSchema } from "./user-proba-progress.schema"
+import { RoleSchema } from "./role.schema"
+import { GroupMembershipSchema } from "./group-membership.schema"
+import { KurinSchema } from "./kurin.schema"
 
 interface IUser {
   name: string
@@ -11,11 +12,10 @@ interface IUser {
   sex?: Sex
   is_guide_complete: boolean
   picture?: string
-  foremans?: ScoutsForemansSchema[]
-  scouts?: ScoutsForemansSchema[]
   proba_progress?: UserProbaProgressSchema[]
-  receivedInvites?: InviteSchema[]
-  sentInvites?: InviteSchema[]
+  memberships?: GroupMembershipSchema[]
+  role?: RoleSchema
+  kurin?: KurinSchema
 }
 
 @Entity("users")
@@ -23,7 +23,7 @@ export class UserSchema extends AbstractEntity<IUser> {
   @Column()
   name: string
 
-  @Column()
+  @Column({ unique: true }) // Add unique constraint
   email: string
 
   @Column({ type: "enum", enum: Sex, nullable: true })
@@ -35,18 +35,17 @@ export class UserSchema extends AbstractEntity<IUser> {
   @Column()
   is_guide_complete: boolean
 
-  @OneToMany(() => ScoutsForemansSchema, (scoutForeman) => scoutForeman.foreman)
-  foremans: ScoutsForemansSchema[]
+  @ManyToOne(() => RoleSchema)
+  @JoinColumn({ name: "role_id" })
+  role: RoleSchema
 
-  @OneToMany(() => ScoutsForemansSchema, (scoutForeman) => scoutForeman.scout)
-  scouts: ScoutsForemansSchema[]
+  @ManyToOne(() => KurinSchema, (kurin) => kurin.members, { nullable: true })
+  @JoinColumn({ name: "kurin_id" })
+  kurin: KurinSchema
+
+  @OneToMany(() => GroupMembershipSchema, (membership) => membership.user)
+  memberships: GroupMembershipSchema[]
 
   @OneToMany(() => UserProbaProgressSchema, (progress) => progress.user)
   proba_progress: UserProbaProgressSchema[]
-
-  @OneToMany(() => InviteSchema, (invite) => invite.scout)
-  receivedInvites: InviteSchema[]
-
-  @OneToMany(() => InviteSchema, (invite) => invite.foreman)
-  sentInvites: InviteSchema[]
 }

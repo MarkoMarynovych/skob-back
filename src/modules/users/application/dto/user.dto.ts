@@ -1,5 +1,6 @@
 import { Expose, Type } from "class-transformer"
 import { Sex } from "../enums/sex.enum"
+import { Role } from "../enums/role.enum"
 
 class ScoutForemanDto {
   @Expose()
@@ -48,6 +49,14 @@ class CampDto {
   end_date: Date
 }
 
+class KurinDto {
+  @Expose()
+  id: string
+
+  @Expose()
+  name: string
+}
+
 export class UserDto {
   @Expose()
   id: string
@@ -66,6 +75,13 @@ export class UserDto {
 
   @Expose()
   picture?: string
+
+  @Expose()
+  role: Role
+
+  @Expose()
+  @Type(() => KurinDto)
+  kurin?: KurinDto
 
   @Expose()
   token?: string
@@ -89,4 +105,10 @@ export class UserDto {
   @Expose()
   @Type(() => CampDto)
   camps?: CampDto[]
+
+  @Expose()
+  foremanCount?: number
+
+  @Expose()
+  totalScouts?: number
 }

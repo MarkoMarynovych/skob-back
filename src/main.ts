@@ -1,7 +1,10 @@
+import { Logger } from "@nestjs/common"
 import { Application } from "./application"
 
-const application = new Application()
+const port = process.env.PORT || 3000
+const application = new Application(port)
+const logger = new Logger("Bootstrap")
 
 application.init().catch((err) => {
-  console.error("Application failed to start:", err)
+  logger.error("Application failed to start:", err)
 })

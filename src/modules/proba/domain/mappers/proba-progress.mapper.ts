@@ -13,27 +13,58 @@ export class ProbaProgressMapper {
     }
 
     progress.forEach((item) => {
-      const template = item.proba_item.template
-      const section = template.section
+      // Null safety: Skip items with incomplete data
+      if (!item.proba_item?.section?.template) {
+        console.warn(`[ProbaProgressMapper] Skipping item with incomplete relations: ${item.id}`)
+        return
+      }
 
+      const section = item.proba_item.section
+      const template = section.template
+      const sectionTitle = section.title
+
+      // Use template.level instead of template.name for more reliable categorization
       let targetProba: keyof OrganizedProbaProgress
-      if (template.name.includes("Прихильник")) {
+      if (template.level === 0) {
         targetProba = "zeroProba"
-      } else if (template.name.includes("Перша")) {
+      } else if (template.level === 1) {
         targetProba = "firstProba"
       } else {
         targetProba = "secondProba"
       }
 
-      if (!result[targetProba][section]) {
-        result[targetProba][section] = []
+      if (!result[targetProba][sectionTitle]) {
+        result[targetProba][sectionTitle] = []
       }
 
-      result[targetProba][section][item.proba_item.order - 1] = {
+      result[targetProba][sectionTitle][item.proba_item.order - 1] = {
+        progress_id: item.id,
         is_completed: item.is_completed,
-        proba_item: { id: item.proba_item.id },
+        proba_item: {
+          id: item.proba_item.id,
+          text: item.proba_item.text,
+          order: item.proba_item.order
+        },
+        completed_at: item.completed_at,
+        signed_by: item.signed_by ? {
+          id: item.signed_by.id,
+          name: item.signed_by.name,
+          email: item.signed_by.email
+        } : undefined,
+        notes: item.notes?.map(note => ({
+          id: note.id,
+          content: note.content,
+          createdAt: note.created_at,
+          createdBy: {
+            id: note.createdBy.id,
+            name: note.createdBy.name,
+            email: note.createdBy.email
+          }
+        })) || []
       }
     })
+
+    console.log(`[ProbaProgressMapper] Final mapped object: ${Object.keys(result.zeroProba).length} zeroProba sections, ${Object.keys(result.firstProba).length} firstProba sections, ${Object.keys(result.secondProba).length} secondProba sections`)
 
     return result
   }

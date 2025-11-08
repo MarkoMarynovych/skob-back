@@ -1,4 +1,5 @@
 import { Sex } from "~modules/users/application/enums/sex.enum"
+import { Role } from "~modules/users/application/enums/role.enum"
 
 export class User {
   public readonly id: string
@@ -7,9 +8,11 @@ export class User {
   public readonly sex?: Sex
   public readonly picture?: string
   public readonly is_guide_complete: boolean
-
-  public readonly foremans?: User[]
-  public readonly scouts?: User[]
+  public readonly role?: Role
+  public readonly kurin?: {
+    id: string
+    name: string
+  }
 
   public readonly probas?: {
     id: string

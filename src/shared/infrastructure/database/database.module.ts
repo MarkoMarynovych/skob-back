@@ -2,9 +2,7 @@ import { RedisModule } from "@nestjs-modules/ioredis"
 import { Module } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { DataSource, DataSourceOptions } from "typeorm"
 import { POSTGRES_SCHEMAS } from "./postgres/postgres.schemas"
-import { seedProbas } from "./postgres/seeds/proba.seed"
 
 @Module({
   imports: [
@@ -16,15 +14,10 @@ import { seedProbas } from "./postgres/seeds/proba.seed"
         username: configService.getOrThrow("POSTGRES_DB_USERNAME"),
         password: configService.getOrThrow("POSTGRES_DB_PASSWORD"),
         database: configService.getOrThrow("POSTGRES_DB_DATABASE"),
-        synchronize: configService.getOrThrow("POSTGRES_DB_SYNCRONIZE") ?? false,
+        synchronize: false, // Explicitly disabled - use migrations instead
         entities: POSTGRES_SCHEMAS,
       }),
       inject: [ConfigService],
-      dataSourceFactory: async (options) => {
-        const dataSource = await new DataSource(options as DataSourceOptions).initialize()
-        await seedProbas(dataSource)
-        return dataSource
-      },
     }),
     RedisModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({

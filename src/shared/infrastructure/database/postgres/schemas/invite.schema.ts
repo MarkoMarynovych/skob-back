@@ -1,30 +1,32 @@
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
 import { AbstractEntity } from "~shared/domain/entities/entity"
+import { InviteType } from "~modules/invites/domain/enums/invite-type.enum"
 import { UserSchema } from "./user.schema"
 
 export interface IInvite {
   id: string
-  foreman_id: UserSchema
-  scout_id: UserSchema
-  status: boolean
+  token: string
+  type: InviteType
+  contextId: string
+  expiresAt: Date
+  createdBy?: UserSchema
 }
 
 @Entity("invites")
 export class InviteSchema extends AbstractEntity<IInvite> {
-  @Column()
-  hash: string
+  @Column({ unique: true })
+  token: string
 
-  @Column()
-  status: boolean
+  @Column({ type: "enum", enum: InviteType })
+  type: InviteType
 
-  @Column()
-  expired_at: Date
+  @Column({ name: "context_id" })
+  contextId: string
 
-  @ManyToOne(() => UserSchema, (user) => user.id)
-  @JoinColumn({ name: "foreman_id" })
-  foreman: UserSchema
+  @Column({ name: "expires_at" })
+  expiresAt: Date
 
-  @ManyToOne(() => UserSchema, (user) => user.id)
-  @JoinColumn({ name: "scout_id" })
-  scout: UserSchema
+  @ManyToOne(() => UserSchema, { nullable: true })
+  @JoinColumn({ name: "created_by_id" })
+  createdBy: UserSchema
 }

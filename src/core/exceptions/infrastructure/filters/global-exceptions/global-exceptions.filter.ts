@@ -21,10 +21,8 @@ export class GlobalExceptionsFilter extends BaseExceptionFilter implements Excep
     if (exception instanceof UnexpectedException || exception instanceof ServerException) {
       if (exception.originalError instanceof Error) {
         this._logger.error(exception, exception.originalError.stack, exception.originalError.message)
-        console.error(exception, exception.originalError.stack, exception.originalError.message)
       } else {
         this._logger.error(exception)
-        console.error(exception)
       }
     }
 
