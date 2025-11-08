@@ -1,17 +1,10 @@
-import { NestFactory } from "@nestjs/core"
-import { AppModule } from "./app.module"
-import { NestExpressApplication } from "@nestjs/platform-express"
-import * as cookieParser from "cookie-parser"
-import * as process from "node:process"
+import { Logger } from "@nestjs/common"
+import { Application } from "./application"
 
-async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule)
-  app.enableCors({
-    origin: process.env.FRONTEND_BASE_URL,
-    credentials: true,
-  })
-  app.use(cookieParser(process.env.COOKIE_SECRET))
-  app.setGlobalPrefix("api")
-  await app.listen(3000)
-}
-bootstrap()
+const port = process.env.PORT || 3000
+const application = new Application(port)
+const logger = new Logger("Bootstrap")
+
+application.init().catch((err) => {
+  logger.error("Application failed to start:", err)
+})

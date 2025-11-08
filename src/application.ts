@@ -1,0 +1,41 @@
+import { NestFactory } from "@nestjs/core"
+import { NestExpressApplication } from "@nestjs/platform-express"
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
+import * as cookieParser from "cookie-parser"
+import * as process from "node:process"
+import { AppModule } from "./app.module"
+
+export class Application {
+  private readonly port: string | number
+  protected app: NestExpressApplication
+
+  constructor(port: string | number = 3000) {
+    this.port = port
+  }
+
+  public async init() {
+    this.app = await NestFactory.create<NestExpressApplication>(AppModule, {
+      bodyParser: true,
+    })
+
+    this.setupMiddleware()
+    this.setupSwagger()
+    await this.app.listen(this.port)
+  }
+
+  private setupMiddleware() {
+    this.app.enableCors({
+      origin: "http://localhost:5173",
+      credentials: true,
+    })
+    this.app.use(cookieParser(process.env.COOKIE_SECRET))
+    this.app.setGlobalPrefix("api")
+  }
+
+  private setupSwagger() {
+    const config = new DocumentBuilder().setTitle("Proba api").setDescription("The proba API description").setVersion("1.0").build()
+
+    const documentFactory = () => SwaggerModule.createDocument(this.app, config)
+    SwaggerModule.setup("api", this.app, documentFactory)
+  }
+}
