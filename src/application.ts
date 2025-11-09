@@ -24,11 +24,15 @@ export class Application {
   }
 
   private setupMiddleware() {
+    const allowedOrigins = process.env.FRONTEND_BASE_URL
+      ? [process.env.FRONTEND_BASE_URL, "http://localhost:5173"]
+      : ["http://localhost:5173"]
+
     this.app.enableCors({
-      origin: "http://localhost:5173",
+      origin: allowedOrigins,
       credentials: true,
     })
-    this.app.use(cookieParser(process.env.COOKIE_SECRET))
+    this.app.use(cookieParser(process.env.COOKIES_SECRET))
     this.app.setGlobalPrefix("api")
   }
 
