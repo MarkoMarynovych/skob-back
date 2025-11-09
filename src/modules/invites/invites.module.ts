@@ -1,4 +1,3 @@
-import { BullModule } from "@nestjs/bull"
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { AuthDiToken } from "~modules/auth/constants"
@@ -27,14 +26,12 @@ import { AcceptInviteV2UseCase } from "./application/use-cases/accept-invite/acc
 import { UserMapper } from "./domain/mappers/user.mapper"
 import { InvitesDiToken } from "./infrastructure/constants/invites-constants"
 import { InvitesController } from "./infrastructure/controllers/invite-controller/invites.controller"
-import { InvitationQueueProcessor } from "./infrastructure/processors/invitation-queue.processor"
 import { InvitesRepository } from "./infrastructure/repositories/invites.repository"
 import { SendInvitationService } from "./infrastructure/services/send-invitation.service"
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([InviteSchema, KurinSchema, UserSchema, RoleSchema, ProbaTemplateSchema, ProbaItemTemplateSchema, UserProbaProgressSchema]),
-    BullModule.registerQueue({ name: "invitations" }),
     UsersModule,
     RolesModule,
     GroupsModule,
@@ -42,7 +39,6 @@ import { SendInvitationService } from "./infrastructure/services/send-invitation
   controllers: [InvitesController],
   providers: [
     UserMapper,
-    InvitationQueueProcessor,
     { provide: InvitesDiToken.SEND_INVITE_USE_CASE, useClass: SendInviteUseCase },
     { provide: InvitesDiToken.ACCEPT_INVITE_USE_CASE, useClass: AcceptInviteUseCase },
     { provide: InvitesDiToken.JOIN_BY_TOKEN_USE_CASE, useClass: JoinByTokenUseCase },
