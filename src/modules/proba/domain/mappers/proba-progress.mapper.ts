@@ -37,7 +37,7 @@ export class ProbaProgressMapper {
         result[targetProba][sectionTitle] = []
       }
 
-      result[targetProba][sectionTitle][item.proba_item.order - 1] = {
+      result[targetProba][sectionTitle][item.proba_item.order] = {
         progress_id: item.id,
         is_completed: item.is_completed,
         proba_item: {
