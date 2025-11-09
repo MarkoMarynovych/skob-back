@@ -22,9 +22,20 @@ export class GetUserGroupsUseCase implements IUseCase<GetUserGroupsInput, any[]>
     // Get all groups where the user is the owner
     const ownedGroups = await this.groupRepository.findByOwnerId(input.userId)
 
+    // Get all groups where the user is a member
+    const memberGroups = await this.groupRepository.findByMemberId(input.userId)
+
+    // Combine and deduplicate groups (in case user is both owner and member)
+    const allGroups = [...ownedGroups]
+    memberGroups.forEach((memberGroup) => {
+      if (!allGroups.find((g) => g.id === memberGroup.id)) {
+        allGroups.push(memberGroup)
+      }
+    })
+
     // Map groups and include scout information with proba progress
     const groupsWithScouts = await Promise.all(
-      ownedGroups.map(async (group) => {
+      allGroups.map(async (group) => {
         const scouts = await Promise.all(
           (group.memberships || []).map(async (membership) => {
             const user = membership.user

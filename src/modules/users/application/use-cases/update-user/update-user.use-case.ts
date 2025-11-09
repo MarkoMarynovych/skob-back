@@ -6,6 +6,8 @@ import { IUseCase } from "~shared/application/use-cases/use-case.interface"
 import { UserDto } from "../../dto/user.dto"
 import { UserDiToken } from "~modules/users/infrastructure/constants/user-constants"
 import { IGroupRepository, GroupDITokens } from "~modules/groups/domain/repositories/group.repository.interface"
+import { IProbaRepository, ProbaDITokens } from "~modules/proba/domain/repositories/proba.repository.interface"
+import { Role } from "../../enums/role.enum"
 
 export interface IUpdateUserPayload {
   updateData: Partial<User>
@@ -20,6 +22,8 @@ export class UpdateUserUseCase implements IUseCase<IUpdateUserPayload, UserDto> 
     private readonly userRepository: IUserRepository,
     @Inject(GroupDITokens.GROUP_REPOSITORY)
     private readonly groupRepository: IGroupRepository,
+    @Inject(ProbaDITokens.PROBA_REPOSITORY)
+    private readonly probaRepository: IProbaRepository,
     private readonly userMapper: UserMapper
   ) {}
 
@@ -42,10 +46,17 @@ export class UpdateUserUseCase implements IUseCase<IUpdateUserPayload, UserDto> 
         }
       }
 
+      const targetUserBeforeUpdate = await this.userRepository.findByEmail(input.targetEmail)
+      const isSexBeingSet = input.updateData.sex && !targetUserBeforeUpdate?.sex
+
       const updatedUser = await this.userRepository.update(input.targetEmail, input.updateData)
 
       if (!updatedUser) {
         throw new NotFoundException(`User with email ${input.targetEmail} not found`)
+      }
+
+      if (isSexBeingSet && updatedUser.role === Role.SCOUT) {
+        await this.initializeUserProbasIfNeeded(updatedUser.id, updatedUser.sex!)
       }
 
       return this.userMapper.toDto(updatedUser)
@@ -54,6 +65,25 @@ export class UpdateUserUseCase implements IUseCase<IUpdateUserPayload, UserDto> 
         throw error
       }
       throw new Error(`Failed to update user: ${error.message}`)
+    }
+  }
+
+  private async initializeUserProbasIfNeeded(userId: string, sex: 'MALE' | 'FEMALE'): Promise<void> {
+    try {
+      const existingProgress = await this.probaRepository.getUserProbaProgress(userId)
+
+      const hasProbasInitialized =
+        Object.keys(existingProgress.zeroProba).length > 0 ||
+        Object.keys(existingProgress.firstProba).length > 0 ||
+        Object.keys(existingProgress.secondProba).length > 0
+
+      if (hasProbasInitialized) {
+        return
+      }
+
+      await this.probaRepository.initializeUserProbas(userId, sex)
+    } catch (error) {
+      // Silently fail - user can retry later
     }
   }
 }

@@ -18,6 +18,7 @@ export interface GroupDetails {
 
 export interface IGroupRepository {
   findByOwnerId(ownerId: string): Promise<GroupSchema[]>
+  findByMemberId(memberId: string): Promise<GroupSchema[]>
   findById(groupId: string): Promise<GroupSchema | null>
   findByIdWithScouts(groupId: string): Promise<GroupDetails | null>
   findByInviteToken(inviteToken: string): Promise<GroupSchema | null>

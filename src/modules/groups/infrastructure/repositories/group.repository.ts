@@ -27,6 +27,15 @@ export class GroupRepository implements IGroupRepository {
     })
   }
 
+  async findByMemberId(memberId: string): Promise<GroupSchema[]> {
+    const memberships = await this.membershipRepository.find({
+      where: { user: { id: memberId } },
+      relations: ["group", "group.owner", "group.memberships", "group.memberships.user"],
+    })
+
+    return memberships.map((membership) => membership.group)
+  }
+
   async findById(groupId: string): Promise<GroupSchema | null> {
     return this.groupRepository.findOne({
       where: { id: groupId },
