@@ -22,7 +22,9 @@ export interface AcceptInviteOutput {
   message: string
   roleAssigned?: Role
   kurinId?: string
+  kurinName?: string
   groupId?: string
+  groupName?: string
 }
 
 @Injectable()
@@ -116,6 +118,7 @@ export class AcceptInviteV2UseCase implements IUseCase<AcceptInviteInput, Accept
       message: "Successfully accepted LIAISON invite",
       roleAssigned: Role.LIAISON,
       kurinId: invite.contextId,
+      kurinName: kurin.name,
     }
   }
 
@@ -138,6 +141,7 @@ export class AcceptInviteV2UseCase implements IUseCase<AcceptInviteInput, Accept
       message: "Successfully accepted FOREMAN invite",
       roleAssigned: Role.FOREMAN,
       kurinId: invite.contextId,
+      kurinName: kurin.name,
     }
   }
 
@@ -165,6 +169,7 @@ export class AcceptInviteV2UseCase implements IUseCase<AcceptInviteInput, Accept
       message: `Successfully joined group ${group.name}`,
       roleAssigned: Role.SCOUT,
       groupId: invite.contextId,
+      groupName: group.name,
     }
   }
 
@@ -191,6 +196,7 @@ export class AcceptInviteV2UseCase implements IUseCase<AcceptInviteInput, Accept
       message: `Successfully joined group ${group.name} as co-foreman`,
       roleAssigned: Role.FOREMAN,
       groupId: invite.contextId,
+      groupName: group.name,
     }
   }
 
