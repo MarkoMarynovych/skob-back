@@ -14,9 +14,7 @@ interface ISendInvitationPayload {
 export class SendInvitationService implements ISendInvitationService {
   private readonly logger = new Logger(SendInvitationService.name)
 
-  constructor(
-    @Inject(SharedInfrastructureDiToken.TEMPLATE_SERVICE) private readonly templateService: TemplateService
-  ) {}
+  constructor(@Inject(SharedInfrastructureDiToken.TEMPLATE_SERVICE) private readonly templateService: TemplateService) {}
 
   public async sendInvitation(payload: ISendInvitationPayload): Promise<void> {
     const invitationLink = `${process.env.BACKEND_URL}/api/invites/${payload.inviteHash}`

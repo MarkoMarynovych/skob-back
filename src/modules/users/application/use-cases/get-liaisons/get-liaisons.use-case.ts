@@ -6,9 +6,7 @@ import { UserDto } from "../../dto/user.dto"
 
 @Injectable()
 export class GetLiaisonsUseCase implements IUseCase<void, UserDto[]> {
-  constructor(
-    @Inject(UserDiToken.USER_REPOSITORY) private readonly userRepository: IUserRepository
-  ) {}
+  constructor(@Inject(UserDiToken.USER_REPOSITORY) private readonly userRepository: IUserRepository) {}
 
   public async execute(): Promise<UserDto[]> {
     const liaisonsWithStats = await this.userRepository.findLiaisonsWithStats()

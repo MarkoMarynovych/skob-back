@@ -18,7 +18,7 @@ export class ProbaRepository implements IProbaRepository {
     private progressRepo: Repository<UserProbaProgressSchema>
   ) {}
 
-  async initializeUserProbas(userId: string, gender: 'MALE' | 'FEMALE'): Promise<void> {
+  async initializeUserProbas(userId: string, gender: "MALE" | "FEMALE"): Promise<void> {
     this.logger.log(`[ProbaRepository] initializeUserProbas called with userId: ${userId}, gender: ${gender}`)
 
     // Step 1: Find all template items that apply to this user's gender
@@ -30,10 +30,7 @@ export class ProbaRepository implements IProbaRepository {
           template: true,
         },
       },
-      where: [
-        { section: { template: { gender_variant: gender } } },
-        { section: { template: { gender_variant: 'NEUTRAL' } } },
-      ],
+      where: [{ section: { template: { gender_variant: gender } } }, { section: { template: { gender_variant: "NEUTRAL" } } }],
     })
 
     this.logger.log(`[ProbaRepository] Found ${applicableItems.length} applicable items`)

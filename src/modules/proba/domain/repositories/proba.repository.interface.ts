@@ -1,7 +1,7 @@
 import { OrganizedProbaProgress, OrganizedProbaProgressView } from "../types/organized-proba-progress.type"
 
 export interface IProbaRepository {
-  initializeUserProbas(userId: string, gender: 'MALE' | 'FEMALE'): Promise<void>
+  initializeUserProbas(userId: string, gender: "MALE" | "FEMALE"): Promise<void>
   getUserProbaProgress(userId: string): Promise<OrganizedProbaProgress>
   getUserProbaProgressView(userId: string): Promise<OrganizedProbaProgressView>
   signProbaItem(userId: string, itemId: string, foremanId: string, status: boolean): Promise<void>

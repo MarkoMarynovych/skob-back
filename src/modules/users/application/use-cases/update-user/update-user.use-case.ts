@@ -68,14 +68,12 @@ export class UpdateUserUseCase implements IUseCase<IUpdateUserPayload, UserDto> 
     }
   }
 
-  private async initializeUserProbasIfNeeded(userId: string, sex: 'MALE' | 'FEMALE'): Promise<void> {
+  private async initializeUserProbasIfNeeded(userId: string, sex: "MALE" | "FEMALE"): Promise<void> {
     try {
       const existingProgress = await this.probaRepository.getUserProbaProgress(userId)
 
       const hasProbasInitialized =
-        Object.keys(existingProgress.zeroProba).length > 0 ||
-        Object.keys(existingProgress.firstProba).length > 0 ||
-        Object.keys(existingProgress.secondProba).length > 0
+        Object.keys(existingProgress.zeroProba).length > 0 || Object.keys(existingProgress.firstProba).length > 0 || Object.keys(existingProgress.secondProba).length > 0
 
       if (hasProbasInitialized) {
         return

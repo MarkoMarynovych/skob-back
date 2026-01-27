@@ -1,118 +1,88 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
-import * as fs from "fs";
-import * as path from "path";
+import { MigrationInterface, QueryRunner } from "typeorm"
+import * as fs from "fs"
+import * as path from "path"
 
 interface ProbaItem {
-  section: string;
-  items: string[];
+  section: string
+  items: string[]
 }
 
 interface ProbaData {
-  level: number;
-  gender: "MALE" | "FEMALE";
-  name: string;
-  fileName: string;
+  level: number
+  gender: "MALE" | "FEMALE"
+  name: string
+  fileName: string
 }
 
 export class SeedProbaTemplates1762328016868 implements MigrationInterface {
-    name = 'SeedProbaTemplates1762328016868'
+  name = "SeedProbaTemplates1762328016868"
 
-    private probaConfigs: ProbaData[] = [
-        { level: 0, gender: "MALE", name: "Нульова проба (юнак)", fileName: "proba_0_male.json" },
-        { level: 0, gender: "FEMALE", name: "Нульова проба (юначка)", fileName: "proba_0_female.json" },
-        { level: 1, gender: "MALE", name: "Перша проба (юнак)", fileName: "proba_1_male.json" },
-        { level: 1, gender: "FEMALE", name: "Перша проба (юначка)", fileName: "proba_1_female.json" },
-        { level: 2, gender: "MALE", name: "Друга проба (юнак)", fileName: "proba_2_male.json" },
-        { level: 2, gender: "FEMALE", name: "Друга проба (юначка)", fileName: "proba_2_female.json" },
-    ];
+  private probaConfigs: ProbaData[] = [
+    { level: 0, gender: "MALE", name: "Нульова проба (юнак)", fileName: "proba_0_male.json" },
+    { level: 0, gender: "FEMALE", name: "Нульова проба (юначка)", fileName: "proba_0_female.json" },
+    { level: 1, gender: "MALE", name: "Перша проба (юнак)", fileName: "proba_1_male.json" },
+    { level: 1, gender: "FEMALE", name: "Перша проба (юначка)", fileName: "proba_1_female.json" },
+    { level: 2, gender: "MALE", name: "Друга проба (юнак)", fileName: "proba_2_male.json" },
+    { level: 2, gender: "FEMALE", name: "Друга проба (юначка)", fileName: "proba_2_female.json" },
+  ]
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        for (const config of this.probaConfigs) {
-            const filePath = path.join(__dirname, "data", config.fileName);
-            const fileContent = fs.readFileSync(filePath, "utf-8");
-            const sections: ProbaItem[] = JSON.parse(fileContent);
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    for (const config of this.probaConfigs) {
+      const filePath = path.join(__dirname, "data", config.fileName)
+      const fileContent = fs.readFileSync(filePath, "utf-8")
+      const sections: ProbaItem[] = JSON.parse(fileContent)
 
-            const probaTemplateId = await this.insertProbaTemplate(
-                queryRunner,
-                config.name,
-                config.level,
-                config.gender
-            );
+      const probaTemplateId = await this.insertProbaTemplate(queryRunner, config.name, config.level, config.gender)
 
-            for (let sectionOrder = 0; sectionOrder < sections.length; sectionOrder++) {
-                const section = sections[sectionOrder];
-                const sectionTemplateId = await this.insertSectionTemplate(
-                    queryRunner,
-                    section.section,
-                    sectionOrder,
-                    probaTemplateId
-                );
+      for (let sectionOrder = 0; sectionOrder < sections.length; sectionOrder++) {
+        const section = sections[sectionOrder]
+        const sectionTemplateId = await this.insertSectionTemplate(queryRunner, section.section, sectionOrder, probaTemplateId)
 
-                for (let itemOrder = 0; itemOrder < section.items.length; itemOrder++) {
-                    const itemText = section.items[itemOrder];
-                    await this.insertItemTemplate(
-                        queryRunner,
-                        itemText,
-                        itemOrder,
-                        sectionTemplateId
-                    );
-                }
-            }
+        for (let itemOrder = 0; itemOrder < section.items.length; itemOrder++) {
+          const itemText = section.items[itemOrder]
+          await this.insertItemTemplate(queryRunner, itemText, itemOrder, sectionTemplateId)
         }
+      }
     }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DELETE FROM proba_item_templates`);
-        await queryRunner.query(`DELETE FROM proba_section_templates`);
-        await queryRunner.query(`DELETE FROM proba_templates`);
-    }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DELETE FROM proba_item_templates`)
+    await queryRunner.query(`DELETE FROM proba_section_templates`)
+    await queryRunner.query(`DELETE FROM proba_templates`)
+  }
 
-    private async insertProbaTemplate(
-        queryRunner: QueryRunner,
-        name: string,
-        level: number,
-        gender: string
-    ): Promise<string> {
-        const result = await queryRunner.query(
-            `
+  private async insertProbaTemplate(queryRunner: QueryRunner, name: string, level: number, gender: string): Promise<string> {
+    const result = await queryRunner.query(
+      `
             INSERT INTO proba_templates (id, created_at, update_at, name, level, gender_variant, version, is_active)
             VALUES (uuid_generate_v4(), now(), now(), $1, $2, $3, 1, true)
             RETURNING id
             `,
-            [name, level, gender]
-        );
-        return result[0].id;
-    }
+      [name, level, gender]
+    )
+    return result[0].id
+  }
 
-    private async insertSectionTemplate(
-        queryRunner: QueryRunner,
-        title: string,
-        order: number,
-        templateId: string
-    ): Promise<string> {
-        const result = await queryRunner.query(
-            `
+  private async insertSectionTemplate(queryRunner: QueryRunner, title: string, order: number, templateId: string): Promise<string> {
+    const result = await queryRunner.query(
+      `
             INSERT INTO proba_section_templates (id, created_at, update_at, title, "order", template_id)
             VALUES (uuid_generate_v4(), now(), now(), $1, $2, $3)
             RETURNING id
             `,
-            [title, order, templateId]
-        );
-        return result[0].id;
-    }
+      [title, order, templateId]
+    )
+    return result[0].id
+  }
 
-    private async insertItemTemplate(
-        queryRunner: QueryRunner,
-        text: string,
-        order: number,
-        sectionId: string
-    ): Promise<void> {
-        await queryRunner.query(
-            `
+  private async insertItemTemplate(queryRunner: QueryRunner, text: string, order: number, sectionId: string): Promise<void> {
+    await queryRunner.query(
+      `
             INSERT INTO proba_item_templates (id, created_at, update_at, text, "order", section_id)
             VALUES (uuid_generate_v4(), now(), now(), $1, $2, $3)
             `,
-            [text, order, sectionId]
-        );
-    }
+      [text, order, sectionId]
+    )
+  }
 }

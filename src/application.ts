@@ -24,9 +24,7 @@ export class Application {
   }
 
   private setupMiddleware() {
-    const allowedOrigins = process.env.FRONTEND_BASE_URL
-      ? [process.env.FRONTEND_BASE_URL, "http://localhost:5173"]
-      : ["http://localhost:5173"]
+    const allowedOrigins = process.env.FRONTEND_BASE_URL ? [process.env.FRONTEND_BASE_URL, "http://localhost:5173"] : ["http://localhost:5173"]
 
     this.app.enableCors({
       origin: allowedOrigins,

@@ -14,19 +14,19 @@ export class CreateUserProbaUseCase implements IUseCase<string, void> {
   ) {}
 
   async execute(userId: string): Promise<void> {
-    console.log('[CreateUserProbaUseCase] Starting execution for userId:', userId)
+    console.log("[CreateUserProbaUseCase] Starting execution for userId:", userId)
     const user = await this.userRepository.findById(userId)
-    console.log('[CreateUserProbaUseCase] Found user:', user)
+    console.log("[CreateUserProbaUseCase] Found user:", user)
 
     if (!user || !user.sex) {
-      console.log('[CreateUserProbaUseCase] User has no gender, returning early')
+      console.log("[CreateUserProbaUseCase] User has no gender, returning early")
       // If user has no gender, we cannot initialize probas.
       // This is expected if they haven't completed onboarding.
       return
     }
 
-    console.log('[CreateUserProbaUseCase] Calling initializeUserProbas with gender:', user.sex)
+    console.log("[CreateUserProbaUseCase] Calling initializeUserProbas with gender:", user.sex)
     await this.probaRepository.initializeUserProbas(user.id, user.sex)
-    console.log('[CreateUserProbaUseCase] Successfully initialized probas')
+    console.log("[CreateUserProbaUseCase] Successfully initialized probas")
   }
 }

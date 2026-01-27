@@ -66,11 +66,13 @@ export class KurinRepository implements IKurinRepository {
       stats.push({
         id: kurin.id,
         name: kurin.name,
-        liaison: kurin.liaison ? {
-          id: kurin.liaison.id,
-          name: kurin.liaison.name,
-          email: kurin.liaison.email,
-        } : undefined,
+        liaison: kurin.liaison
+          ? {
+              id: kurin.liaison.id,
+              name: kurin.liaison.name,
+              email: kurin.liaison.email,
+            }
+          : undefined,
         foremanCount,
         groupCount,
         scoutCount,
@@ -100,7 +102,7 @@ export class KurinRepository implements IKurinRepository {
     const foremenSchemas = await this.userRepository.find({
       where: {
         kurin: { id: kurin.id },
-        role: { name: "FOREMAN" }
+        role: { name: "FOREMAN" },
       },
       relations: ["role"],
     })
@@ -108,10 +110,7 @@ export class KurinRepository implements IKurinRepository {
     const foremen: ForemanWithStats[] = []
 
     for (const foreman of foremenSchemas) {
-      const groupCount = await this.groupRepository
-        .createQueryBuilder("group")
-        .where("group.owner_id = :foremanId", { foremanId: foreman.id })
-        .getCount()
+      const groupCount = await this.groupRepository.createQueryBuilder("group").where("group.owner_id = :foremanId", { foremanId: foreman.id }).getCount()
 
       const scoutCount = await this.membershipRepository
         .createQueryBuilder("membership")
@@ -134,7 +133,7 @@ export class KurinRepository implements IKurinRepository {
 
       let averageProgress = 0
       if (scoutIds.length > 0) {
-        const scoutIdsList = scoutIds.map(s => s.userId)
+        const scoutIdsList = scoutIds.map((s) => s.userId)
 
         const progressData = await this.progressRepository
           .createQueryBuilder("progress")
@@ -167,11 +166,13 @@ export class KurinRepository implements IKurinRepository {
     return {
       id: kurin.id,
       name: kurin.name,
-      liaison: kurin.liaison ? {
-        id: kurin.liaison.id,
-        name: kurin.liaison.name,
-        email: kurin.liaison.email,
-      } : undefined,
+      liaison: kurin.liaison
+        ? {
+            id: kurin.liaison.id,
+            name: kurin.liaison.name,
+            email: kurin.liaison.email,
+          }
+        : undefined,
       foremen,
     }
   }

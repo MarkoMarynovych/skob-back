@@ -60,10 +60,12 @@ export class UserRepository implements IUserRepository {
       is_guide_complete: userSchema.is_guide_complete,
       picture: userSchema.picture,
       role: userSchema.role.name as Role, // We now know userSchema.role exists
-      kurin: userSchema.kurin ? {
-        id: userSchema.kurin.id,
-        name: userSchema.kurin.name,
-      } : undefined,
+      kurin: userSchema.kurin
+        ? {
+            id: userSchema.kurin.id,
+            name: userSchema.kurin.name,
+          }
+        : undefined,
     }
   }
 
@@ -96,10 +98,12 @@ export class UserRepository implements IUserRepository {
       is_guide_complete: userSchema.is_guide_complete,
       picture: userSchema.picture,
       role: userSchema.role.name as Role,
-      kurin: userSchema.kurin ? {
-        id: userSchema.kurin.id,
-        name: userSchema.kurin.name,
-      } : undefined,
+      kurin: userSchema.kurin
+        ? {
+            id: userSchema.kurin.id,
+            name: userSchema.kurin.name,
+          }
+        : undefined,
     }
   }
 
@@ -295,7 +299,7 @@ export class UserRepository implements IUserRepository {
 
       let averageProgress = 0
       if (scoutIds.length > 0) {
-        const scoutIdsList = scoutIds.map(s => s.userId)
+        const scoutIdsList = scoutIds.map((s) => s.userId)
 
         const progressData = await this.progressRepository
           .createQueryBuilder("progress")

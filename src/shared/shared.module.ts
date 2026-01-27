@@ -11,11 +11,7 @@ import { HashService } from "./infrastructure/services/generate-hash/hash.servic
 
 @Global()
 @Module({
-  imports: [
-    DatabaseModule,
-    ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forFeature(POSTGRES_SCHEMAS),
-  ],
+  imports: [DatabaseModule, ConfigModule.forRoot({ isGlobal: true }), TypeOrmModule.forFeature(POSTGRES_SCHEMAS)],
   providers: [
     {
       provide: BaseToken.APP_CONFIG,

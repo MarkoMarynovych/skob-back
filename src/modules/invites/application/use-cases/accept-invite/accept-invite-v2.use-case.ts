@@ -156,7 +156,16 @@ export class AcceptInviteV2UseCase implements IUseCase<AcceptInviteInput, Accept
       throw new NotFoundException(`Group with ID ${invite.contextId} not found`)
     }
 
+    // Get the group owner (foreman) with their kurin to associate scout with the same kurin
+    const groupOwner = await this.userSchemaRepository.findOne({
+      where: { id: group.owner.id },
+      relations: ["kurin"],
+    })
+
     user.role = scoutRole
+    if (groupOwner?.kurin) {
+      user.kurin = groupOwner.kurin
+    }
     await this.userSchemaRepository.save(user)
 
     const isAlreadyMember = await this.groupRepository.isMember(invite.contextId, user.id)
@@ -210,9 +219,7 @@ export class AcceptInviteV2UseCase implements IUseCase<AcceptInviteInput, Accept
     const existingProgress = await this.probaRepository.getUserProbaProgress(userId)
 
     const hasProbasInitialized =
-      Object.keys(existingProgress.zeroProba).length > 0 ||
-      Object.keys(existingProgress.firstProba).length > 0 ||
-      Object.keys(existingProgress.secondProba).length > 0
+      Object.keys(existingProgress.zeroProba).length > 0 || Object.keys(existingProgress.firstProba).length > 0 || Object.keys(existingProgress.secondProba).length > 0
 
     if (hasProbasInitialized) {
       return

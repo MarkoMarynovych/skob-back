@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common"
+import { Inject, Injectable, NotFoundException } from "@nestjs/common"
 import { IGroupRepository, GroupDITokens } from "~modules/groups/domain/repositories/group.repository.interface"
 import { IProbaRepository, ProbaDITokens } from "~modules/proba/domain/repositories/proba.repository.interface"
 import { IUserRepository } from "~modules/users/domain/repositories/user.repository.interface"
@@ -7,6 +7,7 @@ import { IUseCase } from "~shared/application/use-cases/use-case.interface"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
 import { ProbaTemplateSchema } from "~shared/infrastructure/database/postgres/schemas/proba-template.schema"
+import { UserSchema } from "~shared/infrastructure/database/postgres/schemas/user.schema"
 
 interface JoinByTokenInput {
   inviteToken: string
@@ -29,7 +30,9 @@ export class JoinByTokenUseCase implements IUseCase<JoinByTokenInput, JoinByToke
     @Inject(ProbaDITokens.PROBA_REPOSITORY)
     private readonly probaRepository: IProbaRepository,
     @InjectRepository(ProbaTemplateSchema)
-    private readonly probaTemplateRepository: Repository<ProbaTemplateSchema>
+    private readonly probaTemplateRepository: Repository<ProbaTemplateSchema>,
+    @InjectRepository(UserSchema)
+    private readonly userSchemaRepository: Repository<UserSchema>
   ) {}
 
   async execute(input: JoinByTokenInput): Promise<JoinByTokenOutput> {
@@ -42,8 +45,6 @@ export class JoinByTokenUseCase implements IUseCase<JoinByTokenInput, JoinByToke
     const isAlreadyMember = await this.groupRepository.isMember(group.id, input.userId)
 
     if (isAlreadyMember) {
-      // User is already in the group. This is not an error - just return success.
-      console.log(`[JoinByTokenUseCase] User ${input.userId} is already a member of group ${group.name}. Skipping join.`)
       return {
         groupId: group.id,
         groupName: group.name,
@@ -54,12 +55,27 @@ export class JoinByTokenUseCase implements IUseCase<JoinByTokenInput, JoinByToke
     const isOwner = group.owner.id === input.userId
 
     if (isOwner) {
-      // Owner is already implicitly part of the group
-      console.log(`[JoinByTokenUseCase] User ${input.userId} is the owner of group ${group.name}. Skipping join.`)
       return {
         groupId: group.id,
         groupName: group.name,
         message: `You are the owner of ${group.name}`,
+      }
+    }
+
+    // Get the group owner (foreman) with their kurin to associate user with the same kurin
+    const groupOwner = await this.userSchemaRepository.findOne({
+      where: { id: group.owner.id },
+      relations: ["kurin"],
+    })
+
+    // Associate user with the foreman's kurin if available
+    if (groupOwner?.kurin) {
+      const user = await this.userSchemaRepository.findOne({
+        where: { id: input.userId },
+      })
+      if (user) {
+        user.kurin = groupOwner.kurin
+        await this.userSchemaRepository.save(user)
       }
     }
 
@@ -84,9 +100,7 @@ export class JoinByTokenUseCase implements IUseCase<JoinByTokenInput, JoinByToke
     const existingProgress = await this.probaRepository.getUserProbaProgress(userId)
 
     const hasProbasInitialized =
-      Object.keys(existingProgress.zeroProba).length > 0 ||
-      Object.keys(existingProgress.firstProba).length > 0 ||
-      Object.keys(existingProgress.secondProba).length > 0
+      Object.keys(existingProgress.zeroProba).length > 0 || Object.keys(existingProgress.firstProba).length > 0 || Object.keys(existingProgress.secondProba).length > 0
 
     if (hasProbasInitialized) {
       return

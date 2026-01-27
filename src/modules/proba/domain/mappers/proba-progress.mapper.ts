@@ -43,28 +43,33 @@ export class ProbaProgressMapper {
         proba_item: {
           id: item.proba_item.id,
           text: item.proba_item.text,
-          order: item.proba_item.order
+          order: item.proba_item.order,
         },
         completed_at: item.completed_at,
-        signed_by: item.signed_by ? {
-          id: item.signed_by.id,
-          name: item.signed_by.name,
-          email: item.signed_by.email
-        } : undefined,
-        notes: item.notes?.map(note => ({
-          id: note.id,
-          content: note.content,
-          createdAt: note.created_at,
-          createdBy: {
-            id: note.createdBy.id,
-            name: note.createdBy.name,
-            email: note.createdBy.email
-          }
-        })) || []
+        signed_by: item.signed_by
+          ? {
+              id: item.signed_by.id,
+              name: item.signed_by.name,
+              email: item.signed_by.email,
+            }
+          : undefined,
+        notes:
+          item.notes?.map((note) => ({
+            id: note.id,
+            content: note.content,
+            createdAt: note.created_at,
+            createdBy: {
+              id: note.createdBy.id,
+              name: note.createdBy.name,
+              email: note.createdBy.email,
+            },
+          })) || [],
       }
     })
 
-    console.log(`[ProbaProgressMapper] Final mapped object: ${Object.keys(result.zeroProba).length} zeroProba sections, ${Object.keys(result.firstProba).length} firstProba sections, ${Object.keys(result.secondProba).length} secondProba sections`)
+    console.log(
+      `[ProbaProgressMapper] Final mapped object: ${Object.keys(result.zeroProba).length} zeroProba sections, ${Object.keys(result.firstProba).length} firstProba sections, ${Object.keys(result.secondProba).length} secondProba sections`
+    )
 
     return result
   }

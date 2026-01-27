@@ -30,9 +30,9 @@ export class ProbaController {
 
   @Post("users/:userId/initialize")
   async initializeUserProbas(@Param("userId") userId: string): Promise<{ message: string }> {
-    console.log('[ProbaController] POST /users/:userId/initialize called with userId:', userId)
+    console.log("[ProbaController] POST /users/:userId/initialize called with userId:", userId)
     await this.createUserProbaUseCase.execute(userId)
-    console.log('[ProbaController] Use case executed successfully')
+    console.log("[ProbaController] Use case executed successfully")
     return { message: "Probas initialized successfully" }
   }
 
