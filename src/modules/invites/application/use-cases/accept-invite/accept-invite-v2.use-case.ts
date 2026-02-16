@@ -193,7 +193,15 @@ export class AcceptInviteV2UseCase implements IUseCase<AcceptInviteInput, Accept
       throw new NotFoundException(`Group with ID ${invite.contextId} not found`)
     }
 
+    const groupOwner = await this.userSchemaRepository.findOne({
+      where: { id: group.owner.id },
+      relations: ["kurin"],
+    })
+
     user.role = foremanRole
+    if (groupOwner?.kurin) {
+      user.kurin = groupOwner.kurin
+    }
     await this.userSchemaRepository.save(user)
 
     const isAlreadyMember = await this.groupRepository.isMember(invite.contextId, user.id)

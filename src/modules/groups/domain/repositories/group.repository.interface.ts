@@ -10,10 +10,19 @@ export interface ScoutWithProgress {
   totalItems: number
 }
 
+export interface CoForemanInfo {
+  id: string
+  name: string
+  email: string
+}
+
 export interface GroupDetails {
   id: string
   name: string
+  foremanId: string
+  foreman: { id: string; name: string; email: string }
   scouts: ScoutWithProgress[]
+  coForemen: CoForemanInfo[]
 }
 
 export interface IGroupRepository {
@@ -28,6 +37,7 @@ export interface IGroupRepository {
   removeMember(groupId: string, userId: string): Promise<void>
   isMember(groupId: string, userId: string): Promise<boolean>
   isOwnerOfUserGroup(ownerId: string, userId: string): Promise<boolean>
+  isOwnerOrForemanOfScoutGroup(foremanId: string, scoutId: string): Promise<boolean>
 }
 
 export const GroupDITokens = {

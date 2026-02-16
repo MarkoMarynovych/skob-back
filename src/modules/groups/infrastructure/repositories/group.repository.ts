@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
-import { IGroupRepository, GroupDetails, ScoutWithProgress } from "~modules/groups/domain/repositories/group.repository.interface"
+import { IGroupRepository, GroupDetails, ScoutWithProgress, CoForemanInfo } from "~modules/groups/domain/repositories/group.repository.interface"
 import { GroupSchema } from "~shared/infrastructure/database/postgres/schemas/group.schema"
 import { GroupMembershipSchema } from "~shared/infrastructure/database/postgres/schemas/group-membership.schema"
 import { UserSchema } from "~shared/infrastructure/database/postgres/schemas/user.schema"
@@ -23,14 +23,14 @@ export class GroupRepository implements IGroupRepository {
   async findByOwnerId(ownerId: string): Promise<GroupSchema[]> {
     return this.groupRepository.find({
       where: { owner: { id: ownerId } },
-      relations: ["owner", "memberships", "memberships.user"],
+      relations: ["owner", "memberships", "memberships.user", "memberships.user.role"],
     })
   }
 
   async findByMemberId(memberId: string): Promise<GroupSchema[]> {
     const memberships = await this.membershipRepository.find({
       where: { user: { id: memberId } },
-      relations: ["group", "group.owner", "group.memberships", "group.memberships.user"],
+      relations: ["group", "group.owner", "group.memberships", "group.memberships.user", "group.memberships.user.role"],
     })
 
     return memberships.map((membership) => membership.group)
@@ -46,6 +46,7 @@ export class GroupRepository implements IGroupRepository {
   async findByIdWithScouts(groupId: string): Promise<GroupDetails | null> {
     const group = await this.groupRepository.findOne({
       where: { id: groupId },
+      relations: ["owner"],
     })
 
     if (!group) {
@@ -58,6 +59,7 @@ export class GroupRepository implements IGroupRepository {
     })
 
     const scouts: ScoutWithProgress[] = []
+    const coForemen: CoForemanInfo[] = []
 
     for (const membership of memberships) {
       if (!membership.user) {
@@ -79,13 +81,22 @@ export class GroupRepository implements IGroupRepository {
           completedItems: Number(progressData?.completedItems || 0),
           totalItems: Number(progressData?.totalItems || 0),
         })
+      } else if (membership.user.role?.name === "FOREMAN") {
+        coForemen.push({
+          id: membership.user.id,
+          name: membership.user.name,
+          email: membership.user.email,
+        })
       }
     }
 
     return {
       id: group.id,
       name: group.name,
+      foremanId: group.owner.id,
+      foreman: { id: group.owner.id, name: group.owner.name, email: group.owner.email },
       scouts,
+      coForemen,
     }
   }
 
@@ -147,5 +158,33 @@ export class GroupRepository implements IGroupRepository {
       relations: ["group", "group.owner"],
     })
     return !!membership
+  }
+
+  async isOwnerOrForemanOfScoutGroup(foremanId: string, scoutId: string): Promise<boolean> {
+    const scoutMemberships = await this.membershipRepository.find({
+      where: { user: { id: scoutId } },
+      relations: ["group", "group.owner"],
+    })
+
+    for (const scoutMembership of scoutMemberships) {
+      const group = scoutMembership.group
+      if (group.owner.id === foremanId) {
+        return true
+      }
+
+      const foremanMembership = await this.membershipRepository.findOne({
+        where: {
+          group: { id: group.id },
+          user: { id: foremanId },
+        },
+        relations: ["user", "user.role"],
+      })
+
+      if (foremanMembership?.user?.role?.name === "FOREMAN") {
+        return true
+      }
+    }
+
+    return false
   }
 }

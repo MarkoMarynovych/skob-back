@@ -36,24 +36,8 @@ export class AssignProbaUseCase implements IUseCase<IAssignProbaPayload, void> {
       throw new ForbiddenException("Scout must complete onboarding (set gender) before probas can be assigned")
     }
 
-    // Get all groups the foreman owns
-    const foremanGroups = await this.groupRepository.findByOwnerId(input.foremanId)
-
-    if (!foremanGroups || foremanGroups.length === 0) {
-      throw new ForbiddenException("You must own at least one group to assign probas")
-    }
-
-    // Check if scout is a member of any of the foreman's groups
-    let isInSameGroup = false
-    for (const group of foremanGroups) {
-      const isMember = await this.groupRepository.isMember(group.id, input.scoutId)
-      if (isMember) {
-        isInSameGroup = true
-        break
-      }
-    }
-
-    if (!isInSameGroup) {
+    const isAuthorized = await this.groupRepository.isOwnerOrForemanOfScoutGroup(input.foremanId, input.scoutId)
+    if (!isAuthorized) {
       throw new ForbiddenException("You can only assign probas to scouts in your groups")
     }
 

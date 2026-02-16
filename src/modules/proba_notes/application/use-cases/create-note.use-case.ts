@@ -37,24 +37,8 @@ export class CreateNoteUseCase implements IUseCase<ICreateNotePayload, ProbaNote
 
     const scoutId = progress.user.id
 
-    // Verify that the foreman is in the same group as the scout
-    const foremanGroups = await this.groupRepository.findByOwnerId(input.foremanId)
-
-    if (!foremanGroups || foremanGroups.length === 0) {
-      throw new ForbiddenException("You must own at least one group to create notes")
-    }
-
-    // Check if scout is a member of any of the foreman's groups
-    let isInSameGroup = false
-    for (const group of foremanGroups) {
-      const isMember = await this.groupRepository.isMember(group.id, scoutId)
-      if (isMember) {
-        isInSameGroup = true
-        break
-      }
-    }
-
-    if (!isInSameGroup) {
+    const isAuthorized = await this.groupRepository.isOwnerOrForemanOfScoutGroup(input.foremanId, scoutId)
+    if (!isAuthorized) {
       throw new ForbiddenException("You can only create notes for scouts in your groups")
     }
 

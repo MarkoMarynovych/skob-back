@@ -36,7 +36,9 @@ export class GetUserGroupsUseCase implements IUseCase<GetUserGroupsInput, any[]>
     // Map groups and include scout information with proba progress
     const groupsWithScouts = await Promise.all(
       allGroups.map(async (group) => {
-        const validMemberships = (group.memberships || []).filter((m) => m.user != null)
+        const validMemberships = (group.memberships || []).filter(
+          (m) => m.user != null && m.user.role?.name === "SCOUT"
+        )
 
         const scouts = await Promise.all(
           validMemberships.map(async (membership) => {
