@@ -272,14 +272,24 @@ export class UserRepository implements IUserRepository {
       return null
     }
 
-    const groupSchemas = await this.groupRepository.find({
+    const ownedGroups = await this.groupRepository.find({
       where: { owner: { id: foremanId } },
       relations: ["owner"],
     })
 
+    const memberMemberships = await this.membershipRepository.find({
+      where: { user: { id: foremanId } },
+      relations: ["group", "group.owner"],
+    })
+    const memberGroups = memberMemberships
+      .map((m) => m.group)
+      .filter((g) => !ownedGroups.some((og) => og.id === g.id))
+
+    const allGroups = [...ownedGroups, ...memberGroups]
+
     const groups: GroupWithStats[] = []
 
-    for (const group of groupSchemas) {
+    for (const group of allGroups) {
       const scoutCount = await this.membershipRepository
         .createQueryBuilder("membership")
         .innerJoin("membership.user", "user")
