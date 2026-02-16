@@ -60,6 +60,10 @@ export class GroupRepository implements IGroupRepository {
     const scouts: ScoutWithProgress[] = []
 
     for (const membership of memberships) {
+      if (!membership.user) {
+        continue
+      }
+
       if (membership.user.role?.name === "SCOUT") {
         const progressData = await this.progressRepository
           .createQueryBuilder("progress")
